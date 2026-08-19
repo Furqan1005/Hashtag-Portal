@@ -1,31 +1,12 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/brand/logo";
 
 function LoginForm() {
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/business/dashboard";
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleDemoSignIn() {
-    setLoading(true);
-    setError(null);
-
-    try {
-      window.location.assign(`/auth/demo-login?next=${encodeURIComponent(next)}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to open the demo portal.");
-      setLoading(false);
-    }
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
@@ -42,15 +23,8 @@ function LoginForm() {
           </div>
 
           <div className="flex flex-col gap-3">
-            {error && <p className="text-destructive text-center text-sm">{error}</p>}
-            <Button
-              type="button"
-              disabled={loading}
-              onClick={handleDemoSignIn}
-              className="mt-2 w-full"
-            >
-              {loading && <Loader2 className="animate-spin" />}
-              {loading ? "Opening portal..." : "Sign in"}
+            <Button asChild className="mt-2 w-full">
+              <Link href="/business/dashboard">Sign in</Link>
             </Button>
             <p className="text-brand-brown/50 text-center text-xs">
               Demo access is enabled for this portal preview.
