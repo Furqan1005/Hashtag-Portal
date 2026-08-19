@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
@@ -10,7 +10,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/brand/logo";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/business/dashboard";
   const [loading, setLoading] = useState(false);
@@ -21,10 +20,7 @@ function LoginForm() {
     setError(null);
 
     try {
-      const response = await fetch("/auth/demo-login", { method: "POST" });
-      if (!response.ok) throw new Error("Unable to open the demo portal.");
-      router.push(next);
-      router.refresh();
+      window.location.assign(`/auth/demo-login?next=${encodeURIComponent(next)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to open the demo portal.");
       setLoading(false);
