@@ -1,0 +1,156 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  /* Brand surfaces */
+  --color-canvas: #dbbc9d;
+  --color-sidebar: #ecdfc9;
+  --color-sidebar-active: #f7ecd9;
+
+  /* Brand accents */
+  --color-accent: #c6a480;
+  --color-accent-hover: #b8926c;
+
+  /* Primary palette */
+  --color-brand-brown: #543214;
+  --color-brand-brown-soft: #7a5330;
+  --color-brand-black: #000000;
+  --color-brand-white: #ffffff;
+
+  /* Semantic UI tokens (mapped for shadcn-style components) */
+  --background: var(--color-canvas);
+  --foreground: var(--color-brand-brown);
+
+  --card: #f6ead9;
+  --card-foreground: var(--color-brand-brown);
+
+  --popover: #faf1e4;
+  --popover-foreground: var(--color-brand-brown);
+
+  --primary: var(--color-brand-brown);
+  --primary-foreground: var(--color-brand-white);
+
+  --secondary: var(--color-accent);
+  --secondary-foreground: var(--color-brand-white);
+
+  --muted: #e9d9c2;
+  --muted-foreground: #7a5330;
+
+  --accent: var(--color-sidebar-active);
+  --accent-foreground: var(--color-brand-brown);
+
+  --destructive: #b3432b;
+  --destructive-foreground: var(--color-brand-white);
+
+  --success: #4c7a4f;
+  --warning: #b8842e;
+
+  --border: rgba(84, 50, 20, 0.16);
+  --input: rgba(84, 50, 20, 0.22);
+  --ring: var(--color-accent);
+
+  --radius: 0.95rem;
+}
+
+@theme inline {
+  --color-canvas: var(--color-canvas);
+  --color-sidebar: var(--color-sidebar);
+  --color-sidebar-active: var(--color-sidebar-active);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-brand-brown: var(--color-brand-brown);
+  --color-brand-brown-soft: var(--color-brand-brown-soft);
+  --color-brand-black: var(--color-brand-black);
+  --color-brand-white: var(--color-brand-white);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-ui: var(--accent);
+  --color-accent-ui-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-cormorant);
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+}
+
+body {
+  background: var(--color-canvas);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 15% -10%, rgba(255, 255, 255, 0.35), transparent 55%),
+    radial-gradient(ellipse 100% 70% at 100% 110%, rgba(84, 50, 20, 0.08), transparent 60%);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-heading {
+  font-family: var(--font-heading), "Cormorant Garamond", serif;
+}
+
+/* Sidebar surface: subtle depth via layered gradient, never flat/static */
+.sidebar-surface {
+  background-color: var(--color-sidebar);
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(ellipse 90% 60% at 100% 0%, rgba(255, 255, 255, 0.4), transparent 60%),
+    radial-gradient(ellipse 80% 60% at 0% 100%, rgba(84, 50, 20, 0.06), transparent 55%);
+}
+
+.card-surface {
+  background-color: var(--card);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 45%);
+}
+
+.hover-lift {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -12px rgba(84, 50, 20, 0.28);
+}
+
+@keyframes pan-right {
+  0% {
+    transform: scale(1.08) translateX(-2%);
+  }
+  100% {
+    transform: scale(1.08) translateX(2%);
+  }
+}
+.animate-pan-right {
+  animation: pan-right 18s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-pan-right {
+    animation: none;
+  }
+}
+
+* {
+  border-color: var(--border);
+}
