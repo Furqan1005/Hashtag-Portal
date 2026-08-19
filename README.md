@@ -42,4 +42,4 @@ The catalogue is seeded with 28 sample designs across all 7 categories for devel
 
 ## Deploy
 
-Deploy target is Vercel. Set the same environment variables there (`SUPABASE_SERVICE_ROLE_KEY` as a server-only/encrypted variable).
+Deploy target is Vercel, linked to this repo's `hashtag-portal` project (production branch: `claude/estrella-jewellery-portal-d1rkb5`). The Vercel↔Supabase integration auto-provides `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` for all environments — only `SHOWROOM_SESSION_SECRET` needs to be added manually in Project Settings → Environment Variables.
