@@ -24,7 +24,7 @@ function LoginForm() {
 
           <div className="flex flex-col gap-3">
             <Button asChild className="mt-2 w-full">
-              <Link href="/business/dashboard">Sign in</Link>
+              <Link href="/auth/demo-login?next=%2Fbusiness%2Fdashboard">Sign in</Link>
             </Button>
             <p className="text-brand-brown/50 text-center text-xs">
               Demo access is enabled for this portal preview.
