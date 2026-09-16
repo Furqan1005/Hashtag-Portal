@@ -8,27 +8,38 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { PhotoPlaceholder } from "@/components/brand/photo-placeholder";
-import { currency, type CustomerRequest } from "@/lib/furqan-desk/mock-data";
+import { currency, jemrData, type CurrencyCode, type CustomerRequest } from "@/lib/furqan-desk/mock-data";
 
-export function ExportPanel({ request }: { request: CustomerRequest }) {
+export function ExportPanel({
+  request,
+  currencyCode = "INR",
+}: {
+  request: CustomerRequest;
+  currencyCode?: CurrencyCode;
+}) {
   const [reviewed, setReviewed] = useState(false);
 
-  const rows = request.items.map((item) => ({
-    styleNo: item.customerStyleNo,
-    productReference: item.internalDesign ?? "Pending manual match",
-    diamondWeight: item.diamondWeight ?? "—",
-    quantity: item.quantity,
-    value: item.value,
-    totalValue: item.value != null ? item.value * item.quantity : null,
-  }));
+  const rows = request.items.map((item) => {
+    const record = item.internalDesign ? jemrData[item.internalDesign] : undefined;
+    return {
+      styleNo: item.customerStyleNo,
+      productReference: item.internalDesign ?? "Pending manual match",
+      material: record ? `${record.kt} ${record.metal}` : item.metal,
+      diamondWeight: item.diamondWeight ?? "—",
+      quantity: item.quantity,
+      value: item.value,
+      totalValue: item.value != null ? item.value * item.quantity : null,
+    };
+  });
 
   const toTsv = () =>
     [
-      ["Style No.", "Product Reference", "Diamond Wt", "Quantity", "Value", "Total Value"].join("\t"),
+      ["Style No.", "Product Reference", "Material", "Diamond Wt", "Quantity", "Value", "Total Value"].join("\t"),
       ...rows.map((r) =>
         [
           r.styleNo,
           r.productReference,
+          r.material,
           r.diamondWeight,
           r.quantity,
           r.value != null ? r.value : "",
@@ -78,6 +89,7 @@ export function ExportPanel({ request }: { request: CustomerRequest }) {
                 <TableHead>Style No.</TableHead>
                 <TableHead>Product Reference</TableHead>
                 <TableHead>Image</TableHead>
+                <TableHead>Material</TableHead>
                 <TableHead>Diamond Wt</TableHead>
                 <TableHead className="text-right">Quantity</TableHead>
                 <TableHead className="text-right">Value</TableHead>
@@ -91,16 +103,17 @@ export function ExportPanel({ request }: { request: CustomerRequest }) {
                   <TableCell>{rows[i].productReference}</TableCell>
                   <TableCell>
                     <div className="relative size-9 overflow-hidden rounded-md border border-border/50">
-                      <PhotoPlaceholder variant={item.imageVariant} />
+                      <PhotoPlaceholder src={item.imageSrc} variant={item.imageVariant} alt={item.customerStyleNo} />
                     </div>
                   </TableCell>
+                  <TableCell className="text-xs">{rows[i].material}</TableCell>
                   <TableCell>{rows[i].diamondWeight}</TableCell>
                   <TableCell className="text-right">{rows[i].quantity}</TableCell>
                   <TableCell className="text-right">
-                    {rows[i].value != null ? currency(rows[i].value!) : "—"}
+                    {rows[i].value != null ? currency(rows[i].value!, currencyCode) : "—"}
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {rows[i].totalValue != null ? currency(rows[i].totalValue!) : "—"}
+                    {rows[i].totalValue != null ? currency(rows[i].totalValue!, currencyCode) : "—"}
                   </TableCell>
                 </TableRow>
               ))}

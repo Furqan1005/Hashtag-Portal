@@ -8,6 +8,7 @@
  */
 
 import {
+  catalogueImages,
   jemrData,
   getKnowledge,
   type Confidence,
@@ -176,8 +177,11 @@ function estimateValue(internalDesign: string | null): number | null {
   if (!internalDesign) return null;
   const record = jemrData[internalDesign];
   if (!record) return null;
-  const m = record.currentPricing.match(/₹([\d,]+)/);
-  return m ? parseInt(m[1].replace(/,/g, ""), 10) : null;
+  // Grabs the first number in the string regardless of currency symbol
+  // ("₹48,500", "€599", "Fr. 3,720"), so this works for any customer's
+  // pricing currency rather than assuming rupees.
+  const digits = record.currentPricing.match(/([\d][\d,]*)/);
+  return digits ? parseInt(digits[1].replace(/,/g, ""), 10) : null;
 }
 
 export function buildLiveRequest({
@@ -212,6 +216,7 @@ export function buildLiveRequest({
       customerStyleNo: p.customerStyleNo,
       internalDesign: match.internalDesign,
       imageVariant: imageVariantFor(p.customerStyleNo),
+      imageSrc: match.internalDesign ? catalogueImages[match.internalDesign] : undefined,
       diamondWeight: p.diamondWeight,
       quantity: p.quantity,
       metal: p.metal,

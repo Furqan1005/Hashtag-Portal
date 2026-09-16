@@ -236,7 +236,7 @@ export function EmailIntakeClient() {
                 </CardDescription>
               </CardHeader>
             </Card>
-            <ExportPanel request={result} />
+            <ExportPanel request={result} currencyCode={pricing?.currency ?? "INR"} />
           </div>
         </>
       )}

@@ -82,6 +82,14 @@ function ExportCta({ href, children }: { href?: string; children: React.ReactNod
   );
 }
 
+function ItemImage({ item, className }: { item: CustomerRequest["items"][number]; className?: string }) {
+  return (
+    <div className={cn("relative overflow-hidden rounded-md border border-border/50", className)}>
+      <PhotoPlaceholder src={item.imageSrc} variant={item.imageVariant} alt={item.customerStyleNo} />
+    </div>
+  );
+}
+
 export function OrderWorkspace({
   request,
   pricing,
@@ -98,6 +106,7 @@ export function OrderWorkspace({
 }) {
   const [items, setItems] = useState<Record<string, ItemState>>(() => initialState(request));
   const [showSecondaryPlatinum, setShowSecondaryPlatinum] = useState(false);
+  const currencyCode = pricing?.currency ?? "INR";
 
   const needsPlatinum = request.items.some((i) => i.metal === "Platinum");
   const primaryHasPlatinum = Boolean(pricing?.platinum);
@@ -166,7 +175,7 @@ export function OrderWorkspace({
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Mail className="text-brand-brown/50 size-4" />
-                  <CardTitle className="text-base">Original Customer Email</CardTitle>
+                  <CardTitle className="text-base">Original Request</CardTitle>
                 </div>
                 <CardDescription>
                   From {request.from} · {request.receivedAt}
@@ -256,7 +265,15 @@ export function OrderWorkspace({
                           Customer Reference Image
                         </p>
                         <div className="relative aspect-square overflow-hidden rounded-lg border border-border/50">
-                          <PhotoPlaceholder variant={item.imageVariant} />
+                          {item.imageSrc ? (
+                            <div className="bg-muted flex h-full w-full items-center justify-center p-3 text-center">
+                              <p className="text-brand-brown/45 text-xs">
+                                No separate customer photo — matched via Item No.
+                              </p>
+                            </div>
+                          ) : (
+                            <PhotoPlaceholder variant={item.imageVariant} />
+                          )}
                         </div>
                       </div>
                       <div>
@@ -264,9 +281,11 @@ export function OrderWorkspace({
                           Possible Internal Match
                         </p>
                         <div className="relative aspect-square overflow-hidden rounded-lg border border-border/50">
-                          <PhotoPlaceholder
-                            variant={item.internalDesign ? item.imageVariant : "noir"}
-                          />
+                          {item.imageSrc ? (
+                            <PhotoPlaceholder src={item.imageSrc} alt={item.customerStyleNo} />
+                          ) : (
+                            <PhotoPlaceholder variant={item.internalDesign ? item.imageVariant : "noir"} />
+                          )}
                         </div>
                         <p className="mt-1.5 text-sm font-semibold text-brand-brown">
                           {item.internalDesign ?? "No confident match found"}
@@ -445,7 +464,12 @@ export function OrderWorkspace({
                             <TableCell>{record.diamondWeight}</TableCell>
                             <TableCell>{record.colorStoneWeight}</TableCell>
                             <TableCell>{record.currentPricing}</TableCell>
-                            <TableCell className="text-brand-brown/60 text-xs">{record.other}</TableCell>
+                            <TableCell className="text-brand-brown/60 text-xs">
+                              {record.other}
+                              {record.source && (
+                                <span className="text-brand-brown/40 block">Source: {record.source}</span>
+                              )}
+                            </TableCell>
                           </TableRow>
                         );
                       })}
@@ -479,9 +503,9 @@ export function OrderWorkspace({
                     <TableHead>Customer Style</TableHead>
                     <TableHead>Internal Design</TableHead>
                     <TableHead>Image</TableHead>
+                    <TableHead>Material</TableHead>
                     <TableHead>Diamond Wt</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
-                    <TableHead>Metal</TableHead>
                     <TableHead>Size</TableHead>
                     <TableHead className="text-right">Value</TableHead>
                     <TableHead className="text-right">Total Value</TableHead>
@@ -493,22 +517,25 @@ export function OrderWorkspace({
                     const state = items[item.id];
                     const value = state.fields.value;
                     const qty = state.fields.quantity;
+                    const record = state.fields.internalDesign ? jemrData[state.fields.internalDesign] : undefined;
                     return (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium text-brand-brown">{item.customerStyleNo}</TableCell>
                         <TableCell>{state.fields.internalDesign || "—"}</TableCell>
                         <TableCell>
-                          <div className="relative size-10 overflow-hidden rounded-md border border-border/50">
-                            <PhotoPlaceholder variant={item.imageVariant} />
-                          </div>
+                          <ItemImage item={item} className="size-10" />
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {record ? `${record.kt} ${state.fields.metal}` : state.fields.metal}
                         </TableCell>
                         <TableCell>{state.fields.diamondWeight || "—"}</TableCell>
                         <TableCell className="text-right">{qty}</TableCell>
-                        <TableCell>{state.fields.metal}</TableCell>
                         <TableCell>{state.fields.size}</TableCell>
-                        <TableCell className="text-right">{value != null ? currency(value) : "—"}</TableCell>
+                        <TableCell className="text-right">
+                          {value != null ? currency(value, currencyCode) : "—"}
+                        </TableCell>
                         <TableCell className="text-right font-medium">
-                          {value != null ? currency(value * qty) : "—"}
+                          {value != null ? currency(value * qty, currencyCode) : "—"}
                         </TableCell>
                         <TableCell>
                           <Badge variant={item.status === "Ready for Review" ? "success" : "warning"}>
@@ -527,7 +554,7 @@ export function OrderWorkspace({
                     Order Total
                   </p>
                   <p className="font-heading text-2xl font-semibold text-brand-brown">
-                    {currency(totals.total)}
+                    {currency(totals.total, currencyCode)}
                   </p>
                 </div>
               </div>
