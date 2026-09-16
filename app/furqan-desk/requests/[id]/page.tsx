@@ -15,6 +15,7 @@ export default async function RequestWorkspacePage({
       request={request}
       pricing={getPricing(request.customer)}
       knowledge={getKnowledge(request.customer)}
+      exportHref={`/furqan-desk/requests/${request.id}/export`}
     />
   );
 }

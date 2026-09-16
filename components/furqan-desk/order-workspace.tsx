@@ -60,14 +60,41 @@ function initialState(request: CustomerRequest): Record<string, ItemState> {
   return state;
 }
 
+function ExportCta({ href, children }: { href?: string; children: React.ReactNode }) {
+  if (href) {
+    return (
+      <Button asChild variant="accent">
+        <Link href={href}>
+          {children} <ArrowRight className="size-4" />
+        </Link>
+      </Button>
+    );
+  }
+  return (
+    <Button
+      variant="accent"
+      onClick={() =>
+        document.getElementById("export-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+    >
+      {children} <ArrowRight className="size-4" />
+    </Button>
+  );
+}
+
 export function OrderWorkspace({
   request,
   pricing,
   knowledge,
+  exportHref,
 }: {
   request: CustomerRequest;
   pricing: CustomerPricing | undefined;
   knowledge: CustomerKnowledge | undefined;
+  /** Route to a stored request's export page. Omit for an ephemeral/live
+   *  request that isn't in the mock store — the CTA then smooth-scrolls to
+   *  an `#export-anchor` rendered by the caller on the same page. */
+  exportHref?: string;
 }) {
   const [items, setItems] = useState<Record<string, ItemState>>(() => initialState(request));
   const [showSecondaryPlatinum, setShowSecondaryPlatinum] = useState(false);
@@ -118,11 +145,7 @@ export function OrderWorkspace({
           </h1>
           <p className="text-brand-brown/60 mt-1.5 text-sm">{request.subject} · received {request.receivedAt}</p>
         </div>
-        <Button asChild variant="accent">
-          <Link href={`/furqan-desk/requests/${request.id}/export`}>
-            Go to Export <ArrowRight className="size-4" />
-          </Link>
-        </Button>
+        <ExportCta href={exportHref}>Go to Export</ExportCta>
       </div>
 
       <Tabs defaultValue="parser">
@@ -585,11 +608,7 @@ export function OrderWorkspace({
             })}
 
             <div className="flex justify-end">
-              <Button asChild variant="accent">
-                <Link href={`/furqan-desk/requests/${request.id}/export`}>
-                  Confirm &amp; Continue to Export <ArrowRight className="size-4" />
-                </Link>
-              </Button>
+              <ExportCta href={exportHref}>Confirm &amp; Continue to Export</ExportCta>
             </div>
           </div>
         </TabsContent>

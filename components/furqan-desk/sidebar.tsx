@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  MailPlus,
   ListTodo,
   BookMarked,
   History,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/furqan-desk", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/furqan-desk/intake", label: "Email Intake", icon: MailPlus },
   { href: "/furqan-desk/queue", label: "Request Queue", icon: ListTodo },
   { href: "/furqan-desk/knowledge", label: "Customer Knowledge", icon: BookMarked },
   { href: "/furqan-desk/learning", label: "AI Learning History", icon: History },
@@ -47,7 +49,7 @@ export function FurqanSidebar() {
       <nav className="mt-4 flex-1 overflow-y-auto">
         <SectionLabel>Workspace</SectionLabel>
         <div className="flex flex-col gap-1">
-          {links.slice(0, 2).map((link) => {
+          {links.slice(0, 3).map((link) => {
             const active = pathname === link.href;
             return (
               <Link
@@ -69,7 +71,7 @@ export function FurqanSidebar() {
 
         <SectionLabel>Knowledge & Learning</SectionLabel>
         <div className="flex flex-col gap-1">
-          {links.slice(2, 5).map((link) => {
+          {links.slice(3, 6).map((link) => {
             const active = pathname === link.href;
             return (
               <Link
@@ -91,7 +93,7 @@ export function FurqanSidebar() {
 
         <SectionLabel>Management View</SectionLabel>
         <div className="flex flex-col gap-1">
-          {links.slice(5).map((link) => {
+          {links.slice(6).map((link) => {
             const active = pathname === link.href;
             return (
               <Link
