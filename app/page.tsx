@@ -49,7 +49,17 @@ export default function Home() {
         ))}
       </div>
 
-      <p className="text-brand-brown/45 mt-14 text-xs">Estrella Jewels — B2B Ordering Portal</p>
+      <Link
+        href="/furqan-desk"
+        className="hover-lift mt-10 inline-flex items-center gap-2 rounded-full border border-border/50 bg-white/40 px-5 py-2.5 text-sm font-medium text-brand-brown"
+      >
+        Furqan&apos;s Desk
+        <span className="text-brand-brown/55 text-xs font-normal">
+          AI-assisted order & quotation prototype
+        </span>
+      </Link>
+
+      <p className="text-brand-brown/45 mt-8 text-xs">Estrella Jewels — B2B Ordering Portal</p>
     </div>
   );
 }
