@@ -7,15 +7,8 @@
  * The UI always frames its output as a suggestion for human review.
  */
 
-import {
-  catalogueImages,
-  jemrData,
-  getKnowledge,
-  type Confidence,
-  type CustomerRequest,
-  type FieldAudit,
-  type OrderItem,
-} from "./mock-data";
+import { getKnowledge } from "./mock-data";
+import type { ParsedLineItem } from "./request-builder";
 
 const METAL_KEYWORDS = [
   "yellow gold",
@@ -26,51 +19,67 @@ const METAL_KEYWORDS = [
   "silver",
 ];
 
-// Style numbers a real customer might reuse from the demo catalogue, so the
-// live intake flow can show the same high/medium-confidence matches as the
-// seeded requests when the pasted email overlaps with them.
-const GLOBAL_STYLE_TO_DESIGN: Record<string, string> = {
-  R7769: "JE02878262",
-  R7771: "JE02884713",
-  LBC078267: "JE02878262",
-  LBC078311: "JE02884502",
-  "CC-772": "JE02891920",
-  "CC-991": "JE02890114",
-};
+/**
+ * Customer-specific terminology (Customer Knowledge → Known Terminology) is
+ * normalized to its canonical form before extraction, so e.g. Stokkeholm's
+ * "Ref 66603" and another customer's "Reference: 66603" both parse the same
+ * way. Ambiguous terms (flagged with a `note`) are left alone — those need a
+ * human decision, not a silent substitution.
+ */
+function normalizeTerminology(body: string, customer?: string): string {
+  if (!customer) return body;
+  const knowledge = getKnowledge(customer);
+  if (!knowledge) return body;
 
-const IMAGE_VARIANTS = ["amber", "cocoa", "cream", "noir"] as const;
-
-export interface ParsedLineItem {
-  raw: string;
-  customerStyleNo: string;
-  quantity: number;
-  diamondWeight: string | null;
-  metal: string;
-  size: string;
-  customerReference: string;
+  let normalized = body;
+  for (const { term, meaning, note } of knowledge.terminology) {
+    if (note) continue; // ambiguous — don't guess
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    normalized = normalized.replace(new RegExp(`\\b${escaped}\\b`, "gi"), meaning);
+  }
+  return normalized;
 }
 
-function imageVariantFor(styleNo: string) {
-  let hash = 0;
-  for (const ch of styleNo) hash = (hash * 31 + ch.charCodeAt(0)) % 997;
-  return IMAGE_VARIANTS[hash % IMAGE_VARIANTS.length];
-}
-
-/** Splits an email body into paragraph-like blocks, one per likely order line. */
+/** Splits a body of text into paragraph-like blocks, one per likely order line. */
 function splitIntoBlocks(body: string): string[] {
-  return body
+  const byBlankLine = body
     .split(/\n\s*\n/)
     .map((b) => b.trim())
     .filter(Boolean);
+
+  // Some senders number/bullet each line instead of separating with blank
+  // lines (e.g. "1. R7769 ..." / "2. R7771 ..." all on consecutive lines).
+  // If blank-line splitting only produced one big block, fall back to
+  // splitting on numbered/bulleted line starts.
+  if (byBlankLine.length > 1) return byBlankLine;
+
+  const bySequenceMarker = body
+    .split(/\n(?=\s*(?:\d+[.)]|[-*•])\s)/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+  if (bySequenceMarker.length > 1) return bySequenceMarker;
+
+  // Last resort — no blank lines and no numbered/bulleted markers at all
+  // (common after PDF text extraction, which doesn't always preserve
+  // whitespace faithfully). Treat each "<qty> x <style>" line as the start
+  // of a new item, since that's the one pattern every order line has.
+  const byOrderLineStart = body
+    .split(/\n(?=\s*\d+\s*x\s+[A-Za-z])/i)
+    .map((b) => b.trim())
+    .filter(Boolean);
+
+  return byOrderLineStart.length > 1 ? byOrderLineStart : byBlankLine;
 }
 
 function extractQuantity(block: string): number {
-  const m = block.match(/(\d+)\s*x\b/i);
+  const m = block.match(/(\d+)\s*(?:x|pcs?|pieces?)\b/i) || block.match(/\bquantity\s*[:#]?\s*(\d+)/i);
   return m ? parseInt(m[1], 10) : 1;
 }
 
 function extractDiamondWeight(block: string): string | null {
-  const m = block.match(/(\d+(?:[.,]\d+)?)\s*(?:ct|cts|carat)\b/i);
+  const m =
+    block.match(/(\d+(?:[.,]\d+)?)\s*(?:ct|cts|carat)\b/i) ||
+    block.match(/diamond\s*weight\s*[:#]?\s*(\d+(?:[.,]\d+)?)/i);
   if (!m) return null;
   return `${m[1].replace(",", ".")} ct`;
 }
@@ -83,12 +92,15 @@ function extractMetal(block: string): string {
 }
 
 function extractSize(block: string): string {
-  const m = block.match(/size\s*[:#]?\s*(\d+(?:\.\d+)?)/i);
+  const m = block.match(/size\s*[:#]?\s*(\d+(?:\.\d+)?)/i) || block.match(/\bsz\.?\s*(\d+(?:\.\d+)?)/i);
   return m ? m[1] : "—";
 }
 
 function extractReference(block: string): string {
-  const m = block.match(/\bref(?:erence)?\.?\s*[:#]?\s*([A-Za-z0-9-]+)/i);
+  const m =
+    block.match(/\bcustomer\s*reference\s*[:#]?\s*([A-Za-z0-9-]+)/i) ||
+    block.match(/\bref(?:erence)?\.?\s*[:#]?\s*([A-Za-z0-9-]+)/i) ||
+    block.match(/\bpo\.?\s*(?:no\.?|number)?\s*[:#]?\s*([A-Za-z0-9-]+)/i);
   return m ? m[1] : "—";
 }
 
@@ -99,16 +111,20 @@ function extractStyleNo(block: string, exclude: string[]): string | null {
       stripped = stripped.replace(new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), " ");
     }
   }
-  // Also strip the diamond-weight number itself (e.g. "0,50" before "ct" was replaced already).
-  stripped = stripped.replace(/\d+(?:[.,]\d+)?\s*(?:ct|cts|carat)\b/gi, " ");
+  // Also strip the diamond-weight number itself (e.g. "0,50" before "ct" was replaced already),
+  // and any leading sequence marker ("1.", "2)", "-", "•").
+  stripped = stripped
+    .replace(/\d+(?:[.,]\d+)?\s*(?:ct|cts|carat)\b/gi, " ")
+    .replace(/^\s*(?:\d+[.)]|[-*•])\s*/, " ");
 
   const candidates = stripped.match(/\b[A-Za-z]{1,5}\d{3,7}[A-Za-z0-9-]*\b/g) || [];
   const first = candidates[0];
   return first ? first.toUpperCase() : null;
 }
 
-export function parseEmailToItems(body: string): ParsedLineItem[] {
-  const blocks = splitIntoBlocks(body);
+export function parseEmailToItems(body: string, customer?: string): ParsedLineItem[] {
+  const normalized = normalizeTerminology(body, customer);
+  const blocks = splitIntoBlocks(normalized);
   const items: ParsedLineItem[] = [];
 
   for (const block of blocks) {
@@ -130,127 +146,4 @@ export function parseEmailToItems(body: string): ParsedLineItem[] {
   }
 
   return items;
-}
-
-export interface DesignMatch {
-  internalDesign: string | null;
-  confidence: Confidence;
-  reasons: string[];
-}
-
-export function matchDesign(customer: string, styleNo: string): DesignMatch {
-  const knowledge = getKnowledge(customer);
-  const confirmed = knowledge?.confirmedMappings.find(
-    (m) => m.customerStyle.toUpperCase() === styleNo.toUpperCase()
-  );
-  if (confirmed) {
-    return {
-      internalDesign: confirmed.internalDesign,
-      confidence: "high",
-      reasons: [
-        `Confirmed mapping in Customer Knowledge (saved ${confirmed.confirmedOn})`,
-        "Customer history match",
-      ],
-    };
-  }
-
-  const global = GLOBAL_STYLE_TO_DESIGN[styleNo.toUpperCase()];
-  if (global) {
-    return {
-      internalDesign: global,
-      confidence: "medium",
-      reasons: ["Similar/reference mapping found in catalogue", "Product attributes match"],
-    };
-  }
-
-  return {
-    internalDesign: null,
-    confidence: "low",
-    reasons: [
-      "No confirmed mapping in Customer Knowledge for this style",
-      "No confident catalogue match — manual lookup required",
-    ],
-  };
-}
-
-function estimateValue(internalDesign: string | null): number | null {
-  if (!internalDesign) return null;
-  const record = jemrData[internalDesign];
-  if (!record) return null;
-  // Grabs the first number in the string regardless of currency symbol
-  // ("₹48,500", "€599", "Fr. 3,720"), so this works for any customer's
-  // pricing currency rather than assuming rupees.
-  const digits = record.currentPricing.match(/([\d][\d,]*)/);
-  return digits ? parseInt(digits[1].replace(/,/g, ""), 10) : null;
-}
-
-export function buildLiveRequest({
-  customer,
-  subject,
-  from,
-  body,
-}: {
-  customer: string;
-  subject: string;
-  from: string;
-  body: string;
-}): CustomerRequest {
-  const parsed = parseEmailToItems(body);
-
-  const items: OrderItem[] = parsed.map((p, i) => {
-    const match = matchDesign(customer, p.customerStyleNo);
-    const value = estimateValue(match.internalDesign);
-    const audit: Record<string, FieldAudit> = {
-      customerStyleNo: "ai",
-      internalDesign: "ai",
-      diamondWeight: "ai",
-      quantity: "ai",
-      metal: "ai",
-      size: "ai",
-      customerReference: "ai",
-      value: "ai",
-    };
-
-    return {
-      id: `live-item-${i}`,
-      customerStyleNo: p.customerStyleNo,
-      internalDesign: match.internalDesign,
-      imageVariant: imageVariantFor(p.customerStyleNo),
-      imageSrc: match.internalDesign ? catalogueImages[match.internalDesign] : undefined,
-      diamondWeight: p.diamondWeight,
-      quantity: p.quantity,
-      metal: p.metal,
-      size: p.size,
-      customerReference: p.customerReference,
-      value,
-      confidence: match.confidence,
-      status: match.confidence === "low" ? "Review Required" : "Ready for Review",
-      matchReasons: match.reasons,
-      fieldAudit: audit,
-    };
-  });
-
-  const hasLow = items.some((i) => i.confidence === "low");
-  const hasMedium = items.some((i) => i.confidence === "medium");
-  const aiStatus = hasLow ? "Manual Intervention" : hasMedium ? "Medium Confidence" : "Processed";
-  const humanReviewRequired = items.some((i) => i.confidence !== "high") || items.length === 0;
-
-  return {
-    id: `req-live-${Date.now()}`,
-    customer,
-    subject: subject || "New Request",
-    from: from || "Pasted email",
-    receivedAt: new Intl.DateTimeFormat("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date()),
-    emailBody: body,
-    aiStatus,
-    humanReviewRequired,
-    queueStatus: humanReviewRequired ? "Review" : "Ready",
-    items,
-  };
 }

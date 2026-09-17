@@ -8,7 +8,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { PhotoPlaceholder } from "@/components/brand/photo-placeholder";
-import { currency, jemrData, type CurrencyCode, type CustomerRequest } from "@/lib/furqan-desk/mock-data";
+import { jemrData, type CurrencyCode, type CustomerRequest } from "@/lib/furqan-desk/mock-data";
+import { DEFAULT_EXPORT_COLUMNS, formatExportCell, type ExportRow } from "@/lib/furqan-desk/export-format";
+import { cn } from "@/lib/utils";
 
 export function ExportPanel({
   request,
@@ -19,7 +21,7 @@ export function ExportPanel({
 }) {
   const [reviewed, setReviewed] = useState(false);
 
-  const rows = request.items.map((item) => {
+  const rows: ExportRow[] = request.items.map((item) => {
     const record = item.internalDesign ? jemrData[item.internalDesign] : undefined;
     return {
       styleNo: item.customerStyleNo,
@@ -34,17 +36,9 @@ export function ExportPanel({
 
   const toTsv = () =>
     [
-      ["Style No.", "Product Reference", "Material", "Diamond Wt", "Quantity", "Value", "Total Value"].join("\t"),
-      ...rows.map((r) =>
-        [
-          r.styleNo,
-          r.productReference,
-          r.material,
-          r.diamondWeight,
-          r.quantity,
-          r.value != null ? r.value : "",
-          r.totalValue != null ? r.totalValue : "",
-        ].join("\t")
+      DEFAULT_EXPORT_COLUMNS.map((c) => c.label).join("\t"),
+      ...rows.map((row) =>
+        DEFAULT_EXPORT_COLUMNS.map((c) => formatExportCell(c, row, currencyCode)).join("\t")
       ),
     ].join("\n");
 
@@ -80,41 +74,42 @@ export function ExportPanel({
           <CardTitle className="text-base">Customer Order Excel Preview</CardTitle>
           <CardDescription>
             Prepared automatically from the workspace above — instead of building this row by row.
+            Using the default demo column layout until you supply your team&apos;s real export
+            format.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Style No.</TableHead>
-                <TableHead>Product Reference</TableHead>
+                <TableHead>{DEFAULT_EXPORT_COLUMNS[0].label}</TableHead>
                 <TableHead>Image</TableHead>
-                <TableHead>Material</TableHead>
-                <TableHead>Diamond Wt</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-                <TableHead className="text-right">Value</TableHead>
-                <TableHead className="text-right">Total Value</TableHead>
+                {DEFAULT_EXPORT_COLUMNS.slice(1).map((c) => (
+                  <TableHead key={c.key} className={c.align === "right" ? "text-right" : undefined}>
+                    {c.label}
+                  </TableHead>
+                ))}
               </TableRow>
             </TableHeader>
             <TableBody>
               {request.items.map((item, i) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium text-brand-brown">{rows[i].styleNo}</TableCell>
-                  <TableCell>{rows[i].productReference}</TableCell>
+                  <TableCell className="font-medium text-brand-brown">
+                    {formatExportCell(DEFAULT_EXPORT_COLUMNS[0], rows[i], currencyCode)}
+                  </TableCell>
                   <TableCell>
                     <div className="relative size-9 overflow-hidden rounded-md border border-border/50">
                       <PhotoPlaceholder src={item.imageSrc} variant={item.imageVariant} alt={item.customerStyleNo} />
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs">{rows[i].material}</TableCell>
-                  <TableCell>{rows[i].diamondWeight}</TableCell>
-                  <TableCell className="text-right">{rows[i].quantity}</TableCell>
-                  <TableCell className="text-right">
-                    {rows[i].value != null ? currency(rows[i].value!, currencyCode) : "—"}
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {rows[i].totalValue != null ? currency(rows[i].totalValue!, currencyCode) : "—"}
-                  </TableCell>
+                  {DEFAULT_EXPORT_COLUMNS.slice(1).map((c) => (
+                    <TableCell
+                      key={c.key}
+                      className={cn(c.align === "right" && "text-right", c.key === "totalValue" && "font-medium")}
+                    >
+                      {formatExportCell(c, rows[i], currencyCode)}
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))}
             </TableBody>
