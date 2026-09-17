@@ -6,10 +6,14 @@ import { Eye, Download, Copy } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { PhotoPlaceholder } from "@/components/brand/photo-placeholder";
-import { jemrData, type CurrencyCode, type CustomerRequest } from "@/lib/furqan-desk/mock-data";
-import { DEFAULT_EXPORT_COLUMNS, formatExportCell, type ExportRow } from "@/lib/furqan-desk/export-format";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableFooter } from "@/components/ui/table";
+import { currency, type CurrencyCode, type CustomerRequest } from "@/lib/furqan-desk/mock-data";
+import {
+  DEFAULT_EXPORT_COLUMNS,
+  buildExportRow,
+  computeExportTotals,
+  formatExportCell,
+} from "@/lib/furqan-desk/export-format";
 import { cn } from "@/lib/utils";
 
 export function ExportPanel({
@@ -21,25 +25,19 @@ export function ExportPanel({
 }) {
   const [reviewed, setReviewed] = useState(false);
 
-  const rows: ExportRow[] = request.items.map((item) => {
-    const record = item.internalDesign ? jemrData[item.internalDesign] : undefined;
-    return {
-      styleNo: item.customerStyleNo,
-      productReference: item.internalDesign ?? "Pending manual match",
-      material: record ? `${record.kt} ${record.metal}` : item.metal,
-      diamondWeight: item.diamondWeight ?? "—",
-      quantity: item.quantity,
-      value: item.value,
-      totalValue: item.value != null ? item.value * item.quantity : null,
-    };
-  });
+  const rows = request.items.map((item, i) => buildExportRow(item, i));
+  const totals = computeExportTotals(rows);
 
   const toTsv = () =>
     [
+      `Gold price based on current rate (demo)`,
       DEFAULT_EXPORT_COLUMNS.map((c) => c.label).join("\t"),
       ...rows.map((row) =>
         DEFAULT_EXPORT_COLUMNS.map((c) => formatExportCell(c, row, currencyCode)).join("\t")
       ),
+      "",
+      `Total\t\t\t\t\t\t\t\t${totals.quantity}\t${totals.amount}`,
+      `30% Advance\t\t\t\t\t\t\t\t\t${totals.advance}`,
     ].join("\n");
 
   const handleReview = () => {
@@ -52,10 +50,10 @@ export function ExportPanel({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${request.customer.replace(/\s+/g, "-").toLowerCase()}-order-preview.tsv`;
+    a.download = `${request.customer.replace(/\s+/g, "-").toLowerCase()}-order-confirmation.tsv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Mock Excel export downloaded (local demo file, not a real order)");
+    toast.success("Mock order confirmation downloaded (local demo file, not a real order)");
   };
 
   const handleCopy = async () => {
@@ -71,48 +69,50 @@ export function ExportPanel({
     <div className="flex flex-col gap-5">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Customer Order Excel Preview</CardTitle>
+          <CardTitle className="text-base">Order Confirmation Preview</CardTitle>
           <CardDescription>
-            Prepared automatically from the workspace above — instead of building this row by row.
-            Using the default demo column layout until you supply your team&apos;s real export
-            format.
+            Prepared automatically from the workspace above, in the team&apos;s real reply-to-customer
+            format — instead of building this row by row.
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <p className="text-brand-brown/50 mb-3 text-xs italic">
+            Gold price based on current rate (demo placeholder — not a live rate feed)
+          </p>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{DEFAULT_EXPORT_COLUMNS[0].label}</TableHead>
-                <TableHead>Image</TableHead>
-                {DEFAULT_EXPORT_COLUMNS.slice(1).map((c) => (
-                  <TableHead key={c.key} className={c.align === "right" ? "text-right" : undefined}>
+                {DEFAULT_EXPORT_COLUMNS.map((c, i) => (
+                  <TableHead key={`${c.key}-${i}`} className={c.align === "right" ? "text-right" : undefined}>
                     {c.label}
                   </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {request.items.map((item, i) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium text-brand-brown">
-                    {formatExportCell(DEFAULT_EXPORT_COLUMNS[0], rows[i], currencyCode)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="relative size-9 overflow-hidden rounded-md border border-border/50">
-                      <PhotoPlaceholder src={item.imageSrc} variant={item.imageVariant} alt={item.customerStyleNo} />
-                    </div>
-                  </TableCell>
-                  {DEFAULT_EXPORT_COLUMNS.slice(1).map((c) => (
-                    <TableCell
-                      key={c.key}
-                      className={cn(c.align === "right" && "text-right", c.key === "totalValue" && "font-medium")}
-                    >
-                      {formatExportCell(c, rows[i], currencyCode)}
+              {rows.map((row, i) => (
+                <TableRow key={request.items[i].id}>
+                  {DEFAULT_EXPORT_COLUMNS.map((c, ci) => (
+                    <TableCell key={`${c.key}-${ci}`} className={cn(c.align === "right" && "text-right")}>
+                      {formatExportCell(c, row, currencyCode)}
                     </TableCell>
                   ))}
                 </TableRow>
               ))}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={8}>Total</TableCell>
+                <TableCell className="text-right">{totals.quantity}</TableCell>
+                <TableCell className="text-right">{currency(totals.amount, currencyCode)}</TableCell>
+                <TableCell colSpan={2} />
+              </TableRow>
+              <TableRow>
+                <TableCell colSpan={9}>30% Advance</TableCell>
+                <TableCell className="text-right">{currency(totals.advance, currencyCode)}</TableCell>
+                <TableCell colSpan={2} />
+              </TableRow>
+            </TableFooter>
           </Table>
         </CardContent>
       </Card>

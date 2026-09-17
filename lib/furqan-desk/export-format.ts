@@ -1,42 +1,91 @@
 /**
  * Export column layout for the Excel preview / TSV download.
  *
- * This is the one place that defines what the final output looks like.
- * It's the default demo layout — when the team supplies their real export
- * format, only this file (and, if the image column needs to move, the
- * table markup in export-panel.tsx) needs to change.
+ * This mirrors a real order confirmation the team sends back to a customer
+ * (the "Order Confirmation" workbook the user shared: No. / Item No. /
+ * Artikelnummer / Colour / Product Name / WG(g) / Diamond Details /
+ * Unit Price / Qty / Amount / Remark / Remark, plus a totals + 30% advance
+ * footer and a gold-price note at the top).
+ *
+ * The price columns' currency follows the request's own pricing profile
+ * rather than being hardcoded, so the layout stays correct for every
+ * customer even though the source example happened to be priced in USD.
  */
 
-import { currency, type CurrencyCode } from "./mock-data";
+import { currency, jemrData, type CurrencyCode, type OrderItem } from "./mock-data";
 
 export interface ExportRow {
-  styleNo: string;
-  productReference: string;
-  material: string;
-  diamondWeight: string;
+  no: number;
+  itemNo: string;
+  artikelnummer: string;
+  colour: string;
+  productName: string;
+  metalWeight: string;
+  diamondDetails: string;
+  unitPrice: number | null;
   quantity: number;
-  value: number | null;
-  totalValue: number | null;
+  amount: number | null;
+  remark: string;
+  note: string;
+}
+
+const METAL_CODES: Record<string, string> = {
+  "yellow gold": "YG",
+  "white gold": "WG",
+  "rose gold": "RG",
+  "two tone gold": "TT",
+  platinum: "PT",
+  silver: "SLV",
+};
+
+function metalCode(metal: string): string {
+  return METAL_CODES[metal.toLowerCase()] ?? metal;
+}
+
+export function buildExportRow(item: OrderItem, index: number): ExportRow {
+  const record = item.internalDesign ? jemrData[item.internalDesign] : undefined;
+  const productName = record?.other ? record.other.split("·")[0].trim() : "—";
+  const isLabGrown = record?.other?.toLowerCase().includes("lab") ?? false;
+  const diamondDetails = isLabGrown ? "Lab Diamond" : item.diamondWeight ? "Diamond" : "—";
+  const metalWeight = record?.metalWeight ? record.metalWeight.replace(/\s*g$/i, "") : "—";
+  const remark = productName !== "—" ? `${productName}/${metalCode(item.metal)}` : metalCode(item.metal);
+
+  return {
+    no: index + 1,
+    itemNo: item.customerStyleNo,
+    artikelnummer: item.internalDesign ?? "Pending manual match",
+    colour: "",
+    productName,
+    metalWeight,
+    diamondDetails,
+    unitPrice: item.value,
+    quantity: item.quantity,
+    amount: item.value != null ? item.value * item.quantity : null,
+    remark,
+    note: "",
+  };
 }
 
 export interface ExportColumn {
   key: keyof ExportRow;
   label: string;
   align?: "right";
-  format?: (value: ExportRow[keyof ExportRow], currencyCode: CurrencyCode) => string;
+  isCurrency?: boolean;
 }
 
-const currencyFormat = (value: ExportRow[keyof ExportRow], currencyCode: CurrencyCode) =>
-  typeof value === "number" ? currency(value, currencyCode) : "—";
-
 export const DEFAULT_EXPORT_COLUMNS: ExportColumn[] = [
-  { key: "styleNo", label: "Style No." },
-  { key: "productReference", label: "Product Reference" },
-  { key: "material", label: "Material" },
-  { key: "diamondWeight", label: "Diamond Wt" },
-  { key: "quantity", label: "Quantity", align: "right" },
-  { key: "value", label: "Value", align: "right", format: currencyFormat },
-  { key: "totalValue", label: "Total Value", align: "right", format: currencyFormat },
+  { key: "no", label: "No.", align: "right" },
+  { key: "itemNo", label: "Item No." },
+  { key: "artikelnummer", label: "Artikelnummer" },
+  { key: "colour", label: "Colour" },
+  { key: "productName", label: "Product Name" },
+  { key: "metalWeight", label: "WG(g)", align: "right" },
+  { key: "diamondDetails", label: "Diamond Details" },
+  { key: "unitPrice", label: "Unit Price/pcs", align: "right", isCurrency: true },
+  { key: "quantity", label: "Qty", align: "right" },
+  { key: "amount", label: "Amount", align: "right", isCurrency: true },
+  { key: "remark", label: "Remark" },
+  { key: "note", label: "Remark" },
 ];
 
 export function formatExportCell(
@@ -45,6 +94,19 @@ export function formatExportCell(
   currencyCode: CurrencyCode
 ): string {
   const raw = row[column.key];
-  if (column.format) return column.format(raw, currencyCode);
-  return raw != null ? String(raw) : "—";
+  if (raw == null || raw === "") return column.key === "colour" || column.key === "note" ? "" : "—";
+  if (column.isCurrency && typeof raw === "number") return currency(raw, currencyCode);
+  return String(raw);
+}
+
+export interface ExportTotals {
+  quantity: number;
+  amount: number;
+  advance: number;
+}
+
+export function computeExportTotals(rows: ExportRow[]): ExportTotals {
+  const quantity = rows.reduce((sum, r) => sum + r.quantity, 0);
+  const amount = rows.reduce((sum, r) => sum + (r.amount ?? 0), 0);
+  return { quantity, amount, advance: amount * 0.3 };
 }

@@ -9,7 +9,7 @@ export type Confidence = "high" | "medium" | "low";
 
 export type FieldAudit = "ai" | "human";
 
-export type CurrencyCode = "INR" | "EUR" | "CHF";
+export type CurrencyCode = "INR" | "EUR" | "CHF" | "USD";
 
 export interface OrderItem {
   id: string;
@@ -47,6 +47,7 @@ const CURRENCY_FORMAT: Record<CurrencyCode, { symbol: string; locale: string }> 
   INR: { symbol: "₹", locale: "en-IN" },
   EUR: { symbol: "€", locale: "de-DE" },
   CHF: { symbol: "Fr. ", locale: "de-CH" },
+  USD: { symbol: "$", locale: "en-US" },
 };
 
 export const currency = (value: number, code: CurrencyCode = "INR") => {
