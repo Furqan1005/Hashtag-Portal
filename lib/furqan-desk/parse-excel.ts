@@ -23,8 +23,10 @@ type ColumnKey =
   | "size";
 
 const HEADER_ALIASES: Record<ColumnKey, string[]> = {
-  customerStyleNo: ["item no", "item no.", "style no", "style no.", "customer style", "sku", "customer ref no"],
-  internalDesign: ["artikelnummer", "internal design", "product reference", "design no", "design no.", "article number", "articel number"],
+  // "Artikelnummer" is the customer's own design number (confirmed against
+  // a real Diara file); "Item No." is Estrella's internal production number.
+  customerStyleNo: ["artikelnummer", "style no", "style no.", "customer style", "sku", "customer ref no"],
+  internalDesign: ["item no", "item no.", "internal design", "product reference", "design no", "design no.", "article number", "articel number"],
   metal: ["material", "metal"],
   diamondWeight: ["gewicht/carat", "carat", "diamond wt", "diamond weight", "dia wt"],
   quantity: ["qty", "quantity", "pcs"],

@@ -351,8 +351,8 @@ Line 12 — 2x J4105R01248, DS2063G/54
     items: [
       {
         id: "item-diara-1",
-        customerStyleNo: "J4105R01883",
-        internalDesign: "DS2040G/52",
+        customerStyleNo: "DS2040G/52",
+        internalDesign: "J4105R01883",
         imageVariant: "amber",
         imageSrc: "/furqan-desk/diara/DS2040G-52.png",
         diamondWeight: "0.14 ct",
@@ -364,7 +364,7 @@ Line 12 — 2x J4105R01248, DS2063G/54
         confidence: "high",
         status: "Ready for Review",
         matchReasons: [
-          "Exact Item No. match in Diara's own production sheet (DIARA20260914_3.xlsx)",
+          "Exact Artikelnummer match in Diara's own production sheet (DIARA20260914_3.xlsx)",
           "Confirmed mapping in Customer Knowledge (saved 14 Sep 2026)",
         ],
         fieldAudit: {
@@ -380,8 +380,8 @@ Line 12 — 2x J4105R01248, DS2063G/54
       },
       {
         id: "item-diara-2",
-        customerStyleNo: "J4105R01217",
-        internalDesign: "DS2049W/52",
+        customerStyleNo: "DS2049W/52",
+        internalDesign: "J4105R01217",
         imageVariant: "cream",
         imageSrc: "/furqan-desk/diara/DS2049W-52.png",
         diamondWeight: "0.36 ct",
@@ -393,7 +393,7 @@ Line 12 — 2x J4105R01248, DS2063G/54
         confidence: "high",
         status: "Ready for Review",
         matchReasons: [
-          "Exact Item No. match in Diara's own production sheet (DIARA20260914_3.xlsx)",
+          "Exact Artikelnummer match in Diara's own production sheet (DIARA20260914_3.xlsx)",
           "Confirmed mapping in Customer Knowledge (saved 14 Sep 2026)",
         ],
         fieldAudit: {
@@ -409,8 +409,8 @@ Line 12 — 2x J4105R01248, DS2063G/54
       },
       {
         id: "item-diara-3",
-        customerStyleNo: "J4105R01248",
-        internalDesign: "DS2063G/54",
+        customerStyleNo: "DS2063G/54",
+        internalDesign: "J4105R01248",
         imageVariant: "cocoa",
         imageSrc: "/furqan-desk/diara/DS2063G-54.png",
         diamondWeight: "1.20 ct",
@@ -422,7 +422,7 @@ Line 12 — 2x J4105R01248, DS2063G/54
         confidence: "high",
         status: "Ready for Review",
         matchReasons: [
-          "Exact Item No. match in Diara's own production sheet (DIARA20260914_3.xlsx)",
+          "Exact Artikelnummer match in Diara's own production sheet (DIARA20260914_3.xlsx)",
           "Confirmed mapping in Customer Knowledge (saved 14 Sep 2026)",
         ],
         fieldAudit: {
@@ -500,19 +500,19 @@ export const customerKnowledge: CustomerKnowledge[] = [
   {
     customer: "Diara",
     terminology: [
-      { term: "Item No.", meaning: "Customer Style Number (Diara's own SKU)" },
-      { term: "Artikelnummer", meaning: "Internal Design (Estrella's article number)" },
+      { term: "Artikelnummer", meaning: "Customer Style Number (Diara's own design number)" },
+      { term: "Item No.", meaning: "Internal Design (Estrella's own production/article number)" },
       { term: "WG(g)", meaning: "Metal Weight, in grams" },
     ],
     confirmedMappings: [
-      { customerStyle: "J4105R01883", internalDesign: "DS2040G/52", confirmedOn: "14 Sep 2026" },
-      { customerStyle: "J4105R01217", internalDesign: "DS2049W/52", confirmedOn: "14 Sep 2026" },
-      { customerStyle: "J4105R01162", internalDesign: "DS2051G/54", confirmedOn: "14 Sep 2026" },
-      { customerStyle: "J4105R01248", internalDesign: "DS2063G/54", confirmedOn: "14 Sep 2026" },
-      { customerStyle: "J4105R01256", internalDesign: "DS2067G/54", confirmedOn: "14 Sep 2026" },
-      { customerStyle: "J4105BR00066", internalDesign: "DS3400G", confirmedOn: "14 Sep 2026" },
+      { customerStyle: "DS2040G/52", internalDesign: "J4105R01883", confirmedOn: "14 Sep 2026" },
+      { customerStyle: "DS2049W/52", internalDesign: "J4105R01217", confirmedOn: "14 Sep 2026" },
+      { customerStyle: "DS2051G/54", internalDesign: "J4105R01162", confirmedOn: "14 Sep 2026" },
+      { customerStyle: "DS2063G/54", internalDesign: "J4105R01248", confirmedOn: "14 Sep 2026" },
+      { customerStyle: "DS2067G/54", internalDesign: "J4105R01256", confirmedOn: "14 Sep 2026" },
+      { customerStyle: "DS3400G", internalDesign: "J4105BR00066", confirmedOn: "14 Sep 2026" },
     ],
-    requestPattern: ["Item No.", "Artikelnummer", "Material", "Carat weight", "Quantity"],
+    requestPattern: ["Artikelnummer", "Item No.", "Material", "Carat weight", "Quantity"],
   },
 ];
 
@@ -591,70 +591,72 @@ export const jemrData: Record<string, JemrRecord> = {
   // Diara — seeded from the customer's own real production/price sheet
   // (DIARA20260914_3.xlsx), uploaded to validate the prototype against
   // actual data. Values below are copied from that file, not invented.
-  "DS2040G/52": {
-    designNo: "DS2040G/52",
+  // Keyed by Item No. — Estrella's own internal production number; the
+  // customer's own design number (Artikelnummer) is noted in `other`.
+  J4105R01883: {
+    designNo: "J4105R01883",
     metal: "Yellow Gold",
     kt: "14KT (585/-)",
     metalWeight: "1.176 g",
     diamondWeight: "0.14 ct",
     colorStoneWeight: "—",
     currentPricing: "€599",
-    other: "Ring · F/VS1 lab-grown diamonds",
+    other: "Ring · F/VS1 lab-grown diamonds · Artikelnummer DS2040G/52",
     source: "DIARA20260914_3.xlsx, row 2",
   },
-  "DS2049W/52": {
-    designNo: "DS2049W/52",
+  J4105R01217: {
+    designNo: "J4105R01217",
     metal: "White Gold",
     kt: "14KT (585/-)",
     metalWeight: "1.523 g",
     diamondWeight: "0.36 ct",
     colorStoneWeight: "—",
     currentPricing: "€899",
-    other: "Ring · F/VS1 lab-grown diamonds",
+    other: "Ring · F/VS1 lab-grown diamonds · Artikelnummer DS2049W/52",
     source: "DIARA20260914_3.xlsx, row 5",
   },
-  "DS2051G/54": {
-    designNo: "DS2051G/54",
+  J4105R01162: {
+    designNo: "J4105R01162",
     metal: "Yellow Gold",
     kt: "14KT (585/-)",
     metalWeight: "1.313 g",
     diamondWeight: "0.27 ct",
     colorStoneWeight: "—",
     currentPricing: "€699",
-    other: "Ring · F/VS1 lab-grown diamonds",
+    other: "Ring · F/VS1 lab-grown diamonds · Artikelnummer DS2051G/54",
     source: "DIARA20260914_3.xlsx, row 7",
   },
-  "DS2063G/54": {
-    designNo: "DS2063G/54",
+  J4105R01248: {
+    designNo: "J4105R01248",
     metal: "Yellow Gold",
     kt: "14KT (585/-)",
     metalWeight: "2.73 g",
     diamondWeight: "1.20 ct",
     colorStoneWeight: "—",
     currentPricing: "€1,999",
-    other: "Ring · F/VS1 lab-grown diamonds",
+    other: "Ring · F/VS1 lab-grown diamonds · Artikelnummer DS2063G/54",
     source: "DIARA20260914_3.xlsx, row 13",
   },
-  "DS2067G/54": {
-    designNo: "DS2067G/54",
+  J4105R01256: {
+    designNo: "J4105R01256",
     metal: "Yellow Gold",
     kt: "14KT (585/-)",
     metalWeight: "1.82 g",
     diamondWeight: "0.75 ct",
     colorStoneWeight: "—",
     currentPricing: "€1,490",
-    other: "Ring · F/VS1 lab-grown diamonds",
+    other: "Ring · F/VS1 lab-grown diamonds · Artikelnummer DS2067G/54",
     source: "DIARA20260914_3.xlsx, row 16",
   },
-  DS3400G: {
-    designNo: "DS3400G",
+  J4105BR00066: {
+    designNo: "J4105BR00066",
     metal: "Yellow Gold",
     kt: "14KT (585/-)",
     metalWeight: "6.49 g",
     diamondWeight: "3.00 ct",
     colorStoneWeight: "—",
     currentPricing: "€3,499",
-    other: "Bracelet · 18cm · F/VS1 lab-grown diamonds",
+    other: "Bracelet · 18cm · F/VS1 lab-grown diamonds · Artikelnummer DS3400G",
     source: "DIARA20260914_3.xlsx, row 26",
   },
 };
@@ -720,12 +722,12 @@ export const getPricing = (customer: string) =>
 /** Real catalogue photos, keyed by internal design — used when live email
  *  intake matches a design that has one (e.g. seeded Diara designs). */
 export const catalogueImages: Record<string, string> = {
-  "DS2040G/52": "/furqan-desk/diara/DS2040G-52.png",
-  "DS2049W/52": "/furqan-desk/diara/DS2049W-52.png",
-  "DS2051G/54": "/furqan-desk/diara/DS2051G-54.png",
-  "DS2063G/54": "/furqan-desk/diara/DS2063G-54.png",
-  "DS2067G/54": "/furqan-desk/diara/DS2067G-54.png",
-  DS3400G: "/furqan-desk/diara/DS3400G.png",
+  J4105R01883: "/furqan-desk/diara/DS2040G-52.png",
+  J4105R01217: "/furqan-desk/diara/DS2049W-52.png",
+  J4105R01162: "/furqan-desk/diara/DS2051G-54.png",
+  J4105R01248: "/furqan-desk/diara/DS2063G-54.png",
+  J4105R01256: "/furqan-desk/diara/DS2067G-54.png",
+  J4105BR00066: "/furqan-desk/diara/DS3400G.png",
 };
 
 export const secondaryPlatinumPricing = {
@@ -753,8 +755,8 @@ export const learningHistory: LearningEntry[] = [
   {
     date: "14 Sep 2026",
     customer: "Diara",
-    suggestionFrom: "J4105R01883",
-    suggestionTo: "DS2040G/52",
+    suggestionFrom: "DS2040G/52",
+    suggestionTo: "J4105R01883",
     humanAction: "Confirmed",
     status: "Saved to Customer Knowledge — sourced from DIARA20260914_3.xlsx",
   },

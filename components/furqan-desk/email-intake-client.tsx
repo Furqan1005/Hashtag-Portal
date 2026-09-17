@@ -37,8 +37,8 @@ const PROCESSING_STEPS = [
 ];
 
 const COLUMN_LABELS: Record<string, string> = {
-  customerStyleNo: "Style / Item No.",
-  internalDesign: "Internal Design",
+  customerStyleNo: "Style No. / Artikelnummer",
+  internalDesign: "Internal Design / Item No.",
   metal: "Metal / Material",
   diamondWeight: "Diamond Weight / Carat",
   quantity: "Quantity",
@@ -449,7 +449,7 @@ export function EmailIntakeClient() {
                 </CardDescription>
               </CardHeader>
             </Card>
-            <ExportPanel request={result} currencyCode={pricing?.currency ?? "INR"} />
+            <ExportPanel request={result} />
           </div>
         </>
       )}

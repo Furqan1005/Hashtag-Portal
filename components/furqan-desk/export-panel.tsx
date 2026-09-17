@@ -18,7 +18,10 @@ import { cn } from "@/lib/utils";
 
 export function ExportPanel({
   request,
-  currencyCode = "INR",
+  // The team's real order confirmation is always priced in USD, regardless
+  // of the customer's internal/JEMR pricing currency shown elsewhere in the
+  // workspace — so the export format follows the template, not the request.
+  currencyCode = "USD",
 }: {
   request: CustomerRequest;
   currencyCode?: CurrencyCode;

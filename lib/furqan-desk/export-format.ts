@@ -52,8 +52,10 @@ export function buildExportRow(item: OrderItem, index: number): ExportRow {
 
   return {
     no: index + 1,
-    itemNo: item.customerStyleNo,
-    artikelnummer: item.internalDesign ?? "Pending manual match",
+    // "Item No." is Estrella's own internal number; "Artikelnummer" is the
+    // customer's own design number — see HEADER_ALIASES in parse-excel.ts.
+    itemNo: item.internalDesign ?? "Pending manual match",
+    artikelnummer: item.customerStyleNo,
     colour: "",
     productName,
     metalWeight,

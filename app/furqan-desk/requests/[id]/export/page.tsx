@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { ExportPanel } from "@/components/furqan-desk/export-panel";
-import { getPricing, getRequest } from "@/lib/furqan-desk/mock-data";
+import { getRequest } from "@/lib/furqan-desk/mock-data";
 
 export default async function RequestExportPage({
   params,
@@ -25,7 +25,7 @@ export default async function RequestExportPage({
         <p className="text-brand-brown/60 mt-1.5 max-w-xl text-sm">{request.customer} · {request.subject}</p>
       </div>
 
-      <ExportPanel request={request} currencyCode={getPricing(request.customer)?.currency ?? "INR"} />
+      <ExportPanel request={request} />
     </div>
   );
 }

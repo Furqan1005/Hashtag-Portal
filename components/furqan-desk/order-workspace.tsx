@@ -268,7 +268,7 @@ export function OrderWorkspace({
                           {item.imageSrc ? (
                             <div className="bg-muted flex h-full w-full items-center justify-center p-3 text-center">
                               <p className="text-brand-brown/45 text-xs">
-                                No separate customer photo — matched via Item No.
+                                No separate customer photo — matched via style number
                               </p>
                             </div>
                           ) : (
