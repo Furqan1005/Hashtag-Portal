@@ -13,7 +13,7 @@ export default function FurqanDeskDashboard() {
     <div className="flex flex-col gap-8 pt-2">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-heading text-4xl font-semibold text-brand-brown">Furqan&apos;s Desk</h1>
+          <h1 className="font-heading text-4xl font-semibold text-brand-brown">Estrella&apos;s Autopilot</h1>
           <p className="text-brand-brown/60 mt-1.5 max-w-2xl text-sm">
             AI-Assisted Customer Order &amp; Quotation Workspace
           </p>
@@ -45,7 +45,7 @@ export default function FurqanDeskDashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>How a request flows through Furqan&apos;s Desk</CardTitle>
+          <CardTitle>How a request flows through Estrella&apos;s Autopilot</CardTitle>
         </CardHeader>
         <CardContent>
           <ProcessFlow

@@ -96,7 +96,7 @@ export function EmailIntakeClient() {
         <CardHeader>
           <CardTitle className="text-base">Attach the customer email</CardTitle>
           <CardDescription>
-            Paste the email as received — subject, sender and body. Furqan&apos;s Desk reads it the
+            Paste the email as received — subject, sender and body. Estrella&apos;s Autopilot reads it the
             same way for any customer, then applies that customer&apos;s known terminology, pricing
             and confirmed design mappings.
           </CardDescription>

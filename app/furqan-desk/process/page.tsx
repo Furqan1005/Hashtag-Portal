@@ -21,7 +21,7 @@ export default function ProcessPage() {
       <div>
         <h1 className="font-heading text-4xl font-semibold text-brand-brown">Process Visualization</h1>
         <p className="text-brand-brown/60 mt-1.5 max-w-2xl text-sm">
-          How a single customer request moves through Furqan&apos;s Desk, end to end.
+          How a single customer request moves through Estrella&apos;s Autopilot, end to end.
         </p>
       </div>
 

@@ -1,5 +1,5 @@
 /**
- * Heuristic email → order item extraction for the Furqan's Desk prototype.
+ * Heuristic email → order item extraction for the Estrella's Autopilot prototype.
  *
  * This is a deterministic, regex-based stand-in for the "AI reads the
  * request" step — good enough to demonstrate the concept end-to-end on a

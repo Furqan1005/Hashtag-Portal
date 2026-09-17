@@ -25,7 +25,7 @@ const links = [
   { href: "/furqan-desk/exceptions", label: "Exceptions", icon: AlertTriangle },
   { href: "/furqan-desk/process", label: "Process Flow", icon: Workflow },
   { href: "/furqan-desk/comparison", label: "Current vs Future", icon: Scale },
-  { href: "/furqan-desk/about", label: "Why Furqan's Desk", icon: Sparkles },
+  { href: "/furqan-desk/about", label: "Why Estrella's Autopilot", icon: Sparkles },
 ];
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -42,7 +42,7 @@ export function FurqanSidebar() {
   return (
     <aside className="sidebar-surface sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border/50 px-3.5 py-6">
       <Link href="/furqan-desk" className="px-3.5">
-        <p className="font-heading text-2xl font-semibold text-brand-brown">Furqan&apos;s Desk</p>
+        <p className="font-heading text-2xl font-semibold text-brand-brown">Estrella&apos;s Autopilot</p>
         <p className="text-brand-brown/55 text-xs font-medium tracking-wide">Prototype / demo</p>
       </Link>
 

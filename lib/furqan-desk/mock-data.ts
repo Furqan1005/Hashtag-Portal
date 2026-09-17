@@ -1,5 +1,5 @@
 /**
- * Furqan's Desk — prototype/demo mock data.
+ * Estrella's Autopilot — prototype/demo mock data.
  *
  * Everything in this file is sample data for demonstrating the concept.
  * It is not read from or written to JEMR, CRM, Zoho, or any Excel file.

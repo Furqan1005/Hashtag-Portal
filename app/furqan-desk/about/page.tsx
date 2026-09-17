@@ -29,7 +29,7 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col gap-6 pt-2">
       <div>
-        <h1 className="font-heading text-4xl font-semibold text-brand-brown">Why Furqan&apos;s Desk?</h1>
+        <h1 className="font-heading text-4xl font-semibold text-brand-brown">Why Estrella&apos;s Autopilot?</h1>
         <p className="text-brand-brown/60 mt-1.5 max-w-2xl text-sm">
           A prototype for reducing repetitive manual work — not for replacing the team&apos;s
           judgement on every order.

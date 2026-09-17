@@ -53,7 +53,7 @@ export default function Home() {
         href="/furqan-desk"
         className="hover-lift mt-10 inline-flex items-center gap-2 rounded-full border border-border/50 bg-white/40 px-5 py-2.5 text-sm font-medium text-brand-brown"
       >
-        Furqan&apos;s Desk
+        Estrella&apos;s Autopilot
         <span className="text-brand-brown/55 text-xs font-normal">
           AI-assisted order & quotation prototype
         </span>

@@ -63,7 +63,7 @@ export default function ComparisonPage() {
     <div className="flex flex-col gap-6 pt-2">
       <div>
         <h1 className="font-heading text-4xl font-semibold text-brand-brown">
-          Current Process vs Furqan&apos;s Desk
+          Current Process vs Estrella&apos;s Autopilot
         </h1>
         <p className="text-brand-brown/60 mt-1.5 max-w-2xl text-sm">
           Same order-specific detail every time — the reduction is in the repetitive searching,
@@ -79,7 +79,7 @@ export default function ComparisonPage() {
           tone="current"
         />
         <Column
-          title="Furqan's Desk"
+          title="Estrella's Autopilot"
           subtitle="One workspace, with human verification always in the loop."
           items={future}
           tone="future"
