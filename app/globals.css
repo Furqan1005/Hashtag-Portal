@@ -154,3 +154,35 @@ body {
 * {
   border-color: var(--border);
 }
+
+/*
+ * Estrella's Autopilot — scoped to this section only (does not touch the
+ * Business/Showroom portals). Uses Estrella's real brand palette, biased
+ * toward the lighter secondary creams so the workspace never reads as dark,
+ * and swaps the body font for the brand's primary typeface family.
+ */
+.autopilot-theme {
+  --color-canvas: #f7f1db;
+  --color-sidebar: #f1ede3;
+  --color-sidebar-active: #ecdfa9;
+
+  /* True brand gold (#e0c96f) is too pale for white button text, so the
+     interactive accent uses a deeper shade from the same hue for contrast;
+     the pale swatch tone is used everywhere else (badges, sidebar highlight). */
+  --color-accent: #c9a227;
+  --color-accent-hover: #ad8a20;
+
+  --background: var(--color-canvas);
+  --card: #ffffff;
+  --popover: #ffffff;
+  --muted: #f0efec;
+  --accent: var(--color-sidebar-active);
+  --border: rgba(84, 50, 20, 0.12);
+  --input: rgba(84, 50, 20, 0.18);
+  --ring: var(--color-accent);
+
+  --font-sans: var(--font-avenir);
+
+  background-color: var(--color-canvas);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
