@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Check, Sparkles, RotateCcw, FileSpreadsheet, FileText, Mail, Upload } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -104,6 +104,15 @@ export function EmailIntakeClient() {
   const [processing, setProcessing] = useState(false);
   const [step, setStep] = useState(0);
   const [result, setResult] = useState<CustomerRequest | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
+
+  // The result renders well below the fold on a long intake form — without
+  // this, a successful import can look like nothing happened.
+  useEffect(() => {
+    if (result) {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [result]);
 
   const knowledge = useMemo(() => getKnowledge(customer), [customer]);
   const pricing = useMemo(() => getPricing(customer), [customer]);
@@ -486,7 +495,7 @@ export function EmailIntakeClient() {
       </Card>
 
       {result && (
-        <>
+        <div ref={resultRef} className="flex flex-col gap-6">
           <Card className="border-success/30">
             <CardContent className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -522,7 +531,7 @@ export function EmailIntakeClient() {
             </Card>
             <ExportPanel request={result} />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

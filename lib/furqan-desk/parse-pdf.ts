@@ -15,13 +15,21 @@ let workerConfigured = false;
 async function loadPdfjs() {
   const pdfjsLib = await import("pdfjs-dist");
   if (!workerConfigured) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      "pdfjs-dist/build/pdf.worker.min.mjs",
-      import.meta.url
-    ).toString();
+    // Served from our own /public (copied from node_modules at commit
+    // time) rather than resolved via bundler asset URLs or an external
+    // CDN — no bundler-specific asset resolution to break, and no runtime
+    // dependency on a third-party host being reachable.
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "/furqan-desk/vendor/pdf.worker.min.mjs";
     workerConfigured = true;
   }
   return pdfjsLib;
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ]);
 }
 
 /**
@@ -64,7 +72,11 @@ function reconstructLines(items: TextItem[]): string {
 export async function extractPdfText(file: File): Promise<string> {
   const pdfjsLib = await loadPdfjs();
   const buffer = await file.arrayBuffer();
-  const doc = await pdfjsLib.getDocument({ data: buffer }).promise;
+  const doc = await withTimeout(
+    pdfjsLib.getDocument({ data: buffer }).promise,
+    20000,
+    "Timed out loading the PDF — the worker script may not have loaded. Try again, or paste the text instead."
+  );
 
   const pages: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
