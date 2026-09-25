@@ -23,16 +23,37 @@ type ColumnKey =
   | "size";
 
 const HEADER_ALIASES: Record<ColumnKey, string[]> = {
-  // "Artikelnummer" is the customer's own design number (confirmed against
-  // a real Diara file); "Item No." is Estrella's internal production number.
-  customerStyleNo: ["artikelnummer", "style no", "style no.", "customer style", "sku", "customer ref no"],
-  internalDesign: ["item no", "item no.", "internal design", "product reference", "design no", "design no.", "article number", "articel number"],
-  metal: ["material", "metal"],
-  diamondWeight: ["gewicht/carat", "carat", "diamond wt", "diamond weight", "dia wt"],
-  quantity: ["qty", "quantity", "pcs"],
-  value: ["price eur", "price chf", "price", "value", "amount"],
+  // "Artikelnummer"/"Yes Item"/"Indeks Yes" are the customer's own design
+  // number (confirmed against real Diara and "YES" brand files); "Item
+  // No."/"Item(Code)"/"Indeks Prod" is Estrella's internal production number.
+  customerStyleNo: [
+    "yes item",
+    "indeks yes",
+    "artikelnummer",
+    "style no",
+    "style no.",
+    "customer style",
+    "sku",
+    "customer ref no",
+  ],
+  internalDesign: [
+    "item(code)",
+    "indeks prod",
+    "item no",
+    "item no.",
+    "internal design",
+    "product reference",
+    "design no",
+    "design no.",
+    "article number",
+    "articel number",
+  ],
+  metal: ["material/materiał", "materiał", "material", "metal"],
+  diamondWeight: ["gewicht/carat", "stones/kamienie", "kamienie", "carat", "diamond wt", "diamond weight", "dia wt"],
+  quantity: ["qty/ilość", "ilość", "qty", "quantity", "pcs"],
+  value: ["price eur", "price chf", "price/cena", "price", "value", "amount", "cena"],
   customerReference: ["customer reference", "customer ref", "reference", "po number", "po no", "ref"],
-  size: ["size"],
+  size: ["size/rozmiar", "rozmiar", "size"],
 };
 
 function normalizeHeader(cell: unknown): string {
@@ -121,8 +142,12 @@ export async function parseExcelFile(file: File): Promise<ExcelParseResult> {
     const qtyRaw = get("quantity");
     const quantity = qtyRaw ? parseInt(qtyRaw, 10) || 1 : 1;
 
+    // Some sheets have a clean numeric carat column ("Gewicht/Carat": "0.36");
+    // others (e.g. "Stones/Kamienie") pack it into a longer description
+    // ("PIERŚCIONEK ZŁOTO DIAM.0,50CT-1SZT..."), where only a ct-anchored
+    // match can be trusted to grab the right number.
     const caratRaw = get("diamondWeight");
-    const caratMatch = caratRaw.match(/(\d+(?:[.,]\d+)?)/);
+    const caratMatch = caratRaw.match(/(\d+[.,]\d+)\s*ct/i) ?? caratRaw.match(/(\d+(?:[.,]\d+)?)/);
     const diamondWeight = caratMatch ? `${caratMatch[1].replace(",", ".")} ct` : null;
 
     const valueRaw = get("value");
