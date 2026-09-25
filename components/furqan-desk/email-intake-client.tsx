@@ -24,6 +24,7 @@ import { customerKnowledge, getKnowledge, getPricing, type CustomerRequest } fro
 import { parseEmailToItems } from "@/lib/furqan-desk/parse-email";
 import { parseExcelFile, type ExcelParseResult } from "@/lib/furqan-desk/parse-excel";
 import { extractPdfText, parsePdfToItems } from "@/lib/furqan-desk/parse-pdf";
+import { translatePolish } from "@/lib/furqan-desk/polish-glossary";
 import { buildLiveRequest, type ParsedLineItem } from "@/lib/furqan-desk/request-builder";
 
 type Mode = "paste" | "excel" | "pdf";
@@ -64,6 +65,21 @@ Thank you!
 Best regards,
 Marisa`;
 
+const SAMPLE_EMAIL_POLISH = `Dzień dobry
+
+Chcę zamówić:
+
+1 x R7769 pierścionek, złoto pr 585, różowy topaz, size 53
+ref 66603
+
+1 x R7771 kolczyki, srebro pr 925, szafir, size 54
+ref 67738
+
+Dziękuję!
+
+Pozdrawiam,
+Marisa`;
+
 export function EmailIntakeClient() {
   const [mode, setMode] = useState<Mode>("paste");
   const [customer, setCustomer] = useState(customerKnowledge[0].customer);
@@ -97,12 +113,28 @@ export function EmailIntakeClient() {
     [pdfText, customer]
   );
 
+  // Polish is understood regardless of which customer is selected — it's a
+  // language, not a per-customer field convention — so this preview isn't
+  // gated on `customer` the way pdfItems/knowledge/pricing are.
+  const polishMatches = useMemo(() => {
+    const source = mode === "paste" ? body : mode === "pdf" ? (pdfText ?? "") : "";
+    return source ? translatePolish(source).matches : [];
+  }, [mode, body, pdfText]);
+
   const fillSample = () => {
     setMode("paste");
     setSubject("new order");
     setFrom("Marisa <marisa@bystokkeholm.no>");
     setCustomer("By Stokkeholm");
     setBody(SAMPLE_EMAIL);
+  };
+
+  const fillSamplePolish = () => {
+    setMode("paste");
+    setSubject("nowe zamówienie");
+    setFrom("Marisa <marisa@bystokkeholm.no>");
+    setCustomer("By Stokkeholm");
+    setBody(SAMPLE_EMAIL_POLISH);
   };
 
   const reset = () => {
@@ -255,13 +287,22 @@ export function EmailIntakeClient() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
                   <Label>Email body</Label>
-                  <button
-                    type="button"
-                    onClick={fillSample}
-                    className="text-brand-brown/50 hover:text-brand-brown text-xs font-medium"
-                  >
-                    Use sample email
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={fillSample}
+                      className="text-brand-brown/50 hover:text-brand-brown text-xs font-medium"
+                    >
+                      Use sample email
+                    </button>
+                    <button
+                      type="button"
+                      onClick={fillSamplePolish}
+                      className="text-brand-brown/50 hover:text-brand-brown text-xs font-medium"
+                    >
+                      Use Polish sample
+                    </button>
+                  </div>
                 </div>
                 <Textarea
                   value={body}
@@ -270,6 +311,21 @@ export function EmailIntakeClient() {
                   placeholder="Paste the customer's email here..."
                   className="font-sans"
                 />
+                {polishMatches.length > 0 && (
+                  <div className="rounded-xl border border-border/50 bg-white/50 p-3">
+                    <p className="text-sm font-medium text-brand-brown">
+                      Polish detected — {polishMatches.length} term{polishMatches.length === 1 ? "" : "s"}{" "}
+                      translated before extraction
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {polishMatches.map((m) => (
+                        <Badge key={m.polish} variant="outline" className="text-xs">
+                          {m.polish} → {m.english}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -358,6 +414,21 @@ export function EmailIntakeClient() {
                     {pdfText.slice(0, 600)}
                     {pdfText.length > 600 ? "…" : ""}
                   </pre>
+                </div>
+              )}
+              {polishMatches.length > 0 && (
+                <div className="rounded-xl border border-border/50 bg-white/50 p-3">
+                  <p className="text-sm font-medium text-brand-brown">
+                    Polish detected — {polishMatches.length} term{polishMatches.length === 1 ? "" : "s"}{" "}
+                    translated before extraction
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {polishMatches.map((m) => (
+                      <Badge key={m.polish} variant="outline" className="text-xs">
+                        {m.polish} → {m.english}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
             </TabsContent>

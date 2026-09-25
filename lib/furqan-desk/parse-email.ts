@@ -8,6 +8,7 @@
  */
 
 import { getKnowledge } from "./mock-data";
+import { translatePolish } from "./polish-glossary";
 import type { ParsedLineItem } from "./request-builder";
 
 const METAL_KEYWORDS = [
@@ -15,8 +16,15 @@ const METAL_KEYWORDS = [
   "white gold",
   "rose gold",
   "two tone gold",
+  "gold plated",
+  "gold 14k",
+  "gold 9k",
+  "gold 8k",
   "platinum",
   "silver",
+  "steel",
+  "brass",
+  "gold",
 ];
 
 /**
@@ -88,7 +96,7 @@ function extractMetal(block: string): string {
   const lower = block.toLowerCase();
   const found = METAL_KEYWORDS.find((k) => lower.includes(k));
   if (!found) return "Not specified";
-  return found.replace(/\b\w/g, (c) => c.toUpperCase());
+  return found.replace(/\b\w/g, (c) => c.toUpperCase()).replace(/(\d)k\b/gi, "$1K");
 }
 
 function extractSize(block: string): string {
@@ -123,7 +131,8 @@ function extractStyleNo(block: string, exclude: string[]): string | null {
 }
 
 export function parseEmailToItems(body: string, customer?: string): ParsedLineItem[] {
-  const normalized = normalizeTerminology(body, customer);
+  const { text: translated } = translatePolish(body);
+  const normalized = normalizeTerminology(translated, customer);
   const blocks = splitIntoBlocks(normalized);
   const items: ParsedLineItem[] = [];
 

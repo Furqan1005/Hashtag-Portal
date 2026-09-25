@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { customerKnowledge } from "@/lib/furqan-desk/mock-data";
+import { POLISH_JEWELRY_GLOSSARY } from "@/lib/furqan-desk/polish-glossary";
 
 export default function CustomerKnowledgePage() {
   return (
@@ -14,6 +15,27 @@ export default function CustomerKnowledgePage() {
           the current request.
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Language Understanding</CardTitle>
+          <CardDescription>
+            Unlike field terminology, a language isn&apos;t customer-specific — this translation
+            applies to any request, from any customer, sourced from the team&apos;s own EN↔PL jewelry
+            dictionary. Requests in Polish are translated to English before extraction.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3 lg:grid-cols-4">
+            {POLISH_JEWELRY_GLOSSARY.map((entry) => (
+              <div key={entry.polish} className="flex flex-col py-1 text-sm">
+                <span className="text-brand-brown font-medium">{entry.english}</span>
+                <span className="text-brand-brown/50 text-xs">{entry.polish}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {customerKnowledge.map((knowledge) => (
         <Card key={knowledge.customer}>
